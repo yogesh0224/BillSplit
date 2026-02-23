@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BillSplit</title>
+    <style>body { background: linear-gradient(135deg, #4CAF50, #2196F3); color:white; display:flex; align-items:center; justify-content:center; height:100vh; font-family:Roboto; }</style>
+</head>
+<body>
+    <h1 style="font-size:3.5rem; text-align:center;">
+        BillSplit<br>
+        <small style="opacity:0.9; font-size:1.2rem;">Loading your flat...</small>
+    </h1>
+    <script>
+        setTimeout(() => {
+            window.location.href = localStorage.getItem('appState') ? 'dashboard.html' : 'onboarding.html';
+        }, 1200);
+    </script>
+</body>
+</html>

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BillSplit - Profile</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container profile-container">
+        <header class="profile-header d-flex justify-content-between align-items-center">
+            <h1 class="profile-title">Profile</h1>
+            <button class="btn btn-icon btn-dark-mode" onclick="toggleDarkMode()" aria-label="Toggle Dark Mode">
+                <i class="fas fa-moon"></i>
+            </button>
+        </header>
+        <div class="profile-hero animated-gradient">
+            <div class="profile-avatar">
+                <i class="fas fa-user-circle fa-5x"></i>
+            </div>
+            <h2 class="profile-name">Yogesh</h2>
+            <p class="profile-email">yogesh@example.com</p>
+            <p class="profile-location">Kathmandu, Nepal</p>
+        </div>
+        <div class="profile-stats card">
+            <h3 class="section-title">Stats</h3>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <i class="fas fa-receipt"></i>
+                    <p>Expenses: 45</p>
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-users"></i>
+                    <p>Groups: 2</p>
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-handshake"></i>
+                    <p>Settlements: 12</p>
+                </div>
+            </div>
+        </div>
+        <div class="profile-settings card">
+            <h3 class="section-title">Settings</h3>
+            <div class="settings-list">
+                <div class="settings-item d-flex justify-content-between align-items-center">
+                    <span>Dark Mode</span>
+                    <label class="switch">
+                        <input type="checkbox" onclick="toggleDarkMode()">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+                <div class="settings-item d-flex justify-content-between align-items-center">
+                    <span>Notifications</span>
+                    <label class="switch">
+                        <input type="checkbox" checked>
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+                <div class="settings-item d-flex justify-content-between align-items-center">
+                    <span>Default Currency</span>
+                    <select class="select-small">
+                        <option>NPR</option>
+                        <option>USD</option>
+                    </select>
+                </div>
+                <div class="settings-item d-flex justify-content-between align-items-center">
+                    <span>Language</span>
+                    <select class="select-small">
+                        <option>English</option>
+                        <option>Nepali</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="profile-actions card">
+            <button class="btn btn-secondary btn-block">Edit Profile</button>
+            <button class="btn btn-danger btn-block">Log Out</button>
+        </div>
+        <a href="dashboard.html" class="btn btn-link back-link"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+    </div>
+    <script src="scripts.js"></script>
+</body>
+</html>

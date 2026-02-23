@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BillSplit - Analytics</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <div class="container analytics-container">
+        <header class="analytics-header d-flex justify-content-between align-items-center">
+            <h1 class="analytics-title">Analytics</h1>
+            <button class="btn btn-icon btn-dark-mode" onclick="toggleDarkMode()" aria-label="Toggle Dark Mode">
+                <i class="fas fa-moon"></i>
+            </button>
+        </header>
+        <div class="analytics-hero animated-gradient">
+            <h2 class="hero-title">Your Financial Insights</h2>
+            <p class="hero-subtitle">Understand your spending patterns</p>
+        </div>
+        <div class="time-filter card">
+            <select class="form-control">
+                <option>Weekly</option>
+                <option>Monthly</option>
+                <option>Yearly</option>
+            </select>
+        </div>
+        <section class="chart-section card">
+            <h3 class="section-title">Expense Categories</h3>
+            <canvas id="category-chart" height="300"></canvas>
+        </section>
+        <section class="chart-section card">
+            <h3 class="section-title">Spending Trends</h3>
+            <canvas id="trend-chart" height="300"></canvas>
+        </section>
+        <section class="insights-section card">
+            <h3 class="section-title">Key Insights</h3>
+            <div class="insights-list">
+                <div class="insight-item positive">
+                    <i class="fas fa-arrow-down"></i>
+                    <p>Groceries spending down 10%</p>
+                </div>
+                <div class="insight-item warning">
+                    <i class="fas fa-arrow-up"></i>
+                    <p>Utilities up 15% - optimize usage</p>
+                </div>
+                <div class="insight-item">
+                    <i class="fas fa-balance-scale"></i>
+                    <p>Overall equity: 95% fair</p>
+                </div>
+                <div class="insight-item">
+                    <i class="fas fa-lightbulb"></i>
+                    <p>Tip: Switch to energy-efficient appliances</p>
+                </div>
+            </div>
+        </section>
+        <section class="anomaly-detection card">
+            <h3 class="section-title">Anomalies Detected</h3>
+            <div class="anomaly-list">
+                <div class="anomaly-item">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <p>High grocery spend on Feb 15 - review?</p>
+                    <button class="btn btn-secondary btn-small">Review</button>
+                </div>
+            </div>
+        </section>
+        <button class="btn btn-primary btn-block mt-4">Export Report <i class="fas fa-download ml-2"></i></button>
+        <a href="dashboard.html" class="btn btn-link back-link"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+    </div>
+    <script src="scripts.js"></script>
+</body>
+</html>

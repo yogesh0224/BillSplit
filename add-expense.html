@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BillSplit - Add Expense</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container add-expense-container">
+        <header class="add-expense-header d-flex justify-content-between align-items-center">
+            <h1 class="add-expense-title">Add Expense</h1>
+            <button class="btn btn-icon btn-dark-mode" onclick="toggleDarkMode()" aria-label="Toggle Dark Mode">
+                <i class="fas fa-moon"></i>
+            </button>
+        </header>
+        <div class="add-expense-form card shadow-lg">
+            <form id="add-expense-form" onsubmit="handleAddExpense(event)">
+                <div class="form-group">
+                    <label for="title" class="form-label">Title</label>
+                    <input type="text" id="title" class="form-control" placeholder="e.g., Canteen Snacks" required>
+                </div>
+                <div class="form-group">
+                    <label for="amount" class="form-label">Amount (NPR)</label>
+                    <input type="number" id="amount" class="form-control" placeholder="1500" required oninput="updateSharePreview()">
+                </div>
+                <div class="form-group">
+                    <label for="payer" class="form-label">Payer</label>
+                    <select id="payer" class="form-control">
+                        <option value="Yogesh">Yogesh</option>
+                        <option value="Ram">Ram</option>
+                        <option value="Sita">Sita</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="category" class="form-label">Category</label>
+                    <select id="category" class="form-control">
+                        <option value="groceries">Groceries</option>
+                        <option value="rent">Rent</option>
+                        <option value="utilities">Utilities</option>
+                        <option value="outings">Outings</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="split" class="form-label">Split Type</label>
+                    <select id="split" class="form-control" onchange="toggleCustomSplit(this.value)">
+                        <option value="equal">Equal</option>
+                        <option value="custom">Custom</option>
+                        <option value="percentages">Percentages</option>
+                        <option value="shares">Shares</option>
+                    </select>
+                </div>
+                <div id="custom-split" class="custom-split-container hidden">
+                    <h4 class="custom-split-title">Custom Splits</h4>
+                    <div class="custom-split-members"></div>
+                </div>
+                <div class="form-group">
+                    <label for="date" class="form-label">Date</label>
+                    <input type="date" id="date" class="form-control" value="2026-02-23">
+                </div>
+                <div class="form-group">
+                    <label for="remarks" class="form-label">Remarks</label>
+                    <textarea id="remarks" class="form-control" placeholder="Additional notes..."></textarea>
+                    <button type="button" class="btn btn-secondary btn-voice mt-2" onclick="startVoiceInput('remarks')"><i class="fas fa-microphone"></i> Voice Input</button>
+                </div>
+                <div class="form-group">
+                    <label for="receipt" class="form-label">Attach Receipt (Optional)</label>
+                    <input type="file" id="receipt" class="form-control" accept="image/*" onchange="previewReceipt(this.files[0])">
+                    <img id="receipt-preview" class="receipt-preview hidden" alt="Receipt Preview">
+                </div>
+                <div id="share-preview" class="share-preview card mt-3">
+                    <h4>Share Preview</h4>
+                    <div class="share-list"></div>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block mt-4">Add Expense <i class="fas fa-check ml-2"></i></button>
+            </form>
+        </div>
+        <a href="dashboard.html" class="btn btn-link back-link"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+    </div>
+    <script src="scripts.js"></script>
+</body>
+</html>

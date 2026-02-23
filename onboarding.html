@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BillSplit - Onboarding</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container onboarding-container">
+        <div class="hero onboarding-hero animated-gradient">
+            <div class="hero-content">
+                <i class="fas fa-handshake-alt fa-4x hero-icon animate-bounce"></i>
+                <h1 class="hero-title">Welcome to BillSplit</h1>
+                <p class="hero-subtitle">Fair expense sharing for roommates and friends in Nepal</p>
+                <p class="hero-description">Track, split, and settle bills effortlessly. No more arguments over money!</p>
+            </div>
+        </div>
+        <div class="wizard card shadow-lg">
+            <div class="wizard-step active-step" id="step-1">
+                <h2 class="step-title">Create Your Account</h2>
+                <form class="onboarding-form">
+                    <div class="form-group">
+                        <label for="email" class="form-label">Email or Phone</label>
+                        <input type="text" id="email" class="form-control" placeholder="Enter email or phone" required aria-required="true">
+                        <div class="form-feedback invalid-feedback">Please enter a valid email or phone.</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" id="password" class="form-control" placeholder="Create a password" required aria-required="true">
+                        <div class="form-feedback invalid-feedback">Password must be at least 8 characters.</div>
+                    </div>
+                    <button type="button" class="btn btn-primary btn-block wizard-btn-next" onclick="showNextStep(2)">Next <i class="fas fa-arrow-right ml-2"></i></button>
+                    <p class="social-login-text">Or sign up with</p>
+                    <div class="social-buttons">
+                        <button class="btn btn-social btn-google"><i class="fab fa-google"></i> Google</button>
+                        <button class="btn btn-social btn-facebook"><i class="fab fa-facebook"></i> Facebook</button>
+                    </div>
+                </form>
+            </div>
+            <div class="wizard-step" id="step-2">
+                <h2 class="step-title">Set Up Your First Group</h2>
+                <div class="form-group">
+                    <label for="group-name" class="form-label">Group Name</label>
+                    <input type="text" id="group-name" class="form-control" placeholder="e.g., Flat 101" value="Flat 101" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Invite Members</label>
+                    <input type="text" class="form-control" placeholder="Emails or phones, separated by commas">
+                    <button class="btn btn-secondary btn-add-member mt-2"><i class="fas fa-plus"></i> Add More</button>
+                </div>
+                <button type="button" class="btn btn-primary btn-block wizard-btn-next" onclick="showNextStep(3)">Next <i class="fas fa-arrow-right ml-2"></i></button>
+            </div>
+            <div class="wizard-step" id="step-3">
+                <h2 class="step-title">Quick Tutorial</h2>
+                <div class="tutorial-carousel">
+                    <div class="carousel-slide active-slide">
+                        <img src="https://via.placeholder.com/300x200?text=Add+Expense" alt="Tutorial: Add Expense" class="tutorial-image">
+                        <p class="tutorial-text">Add expenses in seconds with our intuitive form</p>
+                    </div>
+                    <div class="carousel-slide">
+                        <img src="https://via.placeholder.com/300x200?text=Split+Bills" alt="Tutorial: Split Bills" class="tutorial-image">
+                        <p class="tutorial-text">Split bills fairly with equal or custom options</p>
+                    </div>
+                    <div class="carousel-slide">
+                        <img src="https://via.placeholder.com/300x200?text=Track+Balances" alt="Tutorial: Track Balances" class="tutorial-image">
+                        <p class="tutorial-text">Track balances and settle up easily</p>
+                    </div>
+                </div>
+                <div class="carousel-controls">
+                    <button class="btn btn-secondary carousel-prev"><i class="fas fa-arrow-left"></i></button>
+                    <button class="btn btn-secondary carousel-next"><i class="fas fa-arrow-right"></i></button>
+                </div>
+                <button type="button" class="btn btn-primary btn-block" onclick="window.location.href='dashboard.html'">Get Started <i class="fas fa-rocket ml-2"></i></button>
+            </div>
+        </div>
+        <p class="login-link">Already have an account? <a href="#" class="link-primary">Log in</a></p>
+    </div>
+    <script src="scripts.js"></script>
+</body>
+</html>

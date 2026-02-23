@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BillSplit - Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <div class="container dashboard-container">
+        <header class="dashboard-header d-flex justify-content-between align-items-center">
+            <h1 class="dashboard-title">Dashboard</h1>
+            <div class="header-actions">
+                <button class="btn btn-icon btn-dark-mode" onclick="toggleDarkMode()" aria-label="Toggle Dark Mode">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <button class="btn btn-icon btn-notification" aria-label="Notifications">
+                    <i class="fas fa-bell"></i>
+                    <span class="badge badge-notification">3</span>
+                </button>
+            </div>
+        </header>
+        <div class="hero dashboard-hero animated-gradient">
+            <div class="hero-content">
+                <h2 class="hero-title">Hi Yogesh!</h2>
+                <p class="balance-info">
+                    Your balance: <span class="balance positive">NPR 500</span>
+                </p>
+                <p class="hero-subtitle">Your flat's fair - keep it going!</p>
+                <div class="quick-stats d-flex justify-content-around mt-3">
+                    <div class="stat-item">
+                        <i class="fas fa-wallet stat-icon"></i>
+                        <p>Total Spent: NPR 8500</p>
+                    </div>
+                    <div class="stat-item">
+                        <i class="fas fa-users stat-icon"></i>
+                        <p>Groups: 2</p>
+                    </div>
+                    <div class="stat-item">
+                        <i class="fas fa-chart-line stat-icon"></i>
+                        <p>Trends: Up 5%</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="search-bar card">
+            <input type="search" class="form-control search-input" placeholder="Search expenses..." oninput="debounce(() => searchExpenses(this.value), 300)" aria-label="Search expenses">
+            <i class="fas fa-search search-icon"></i>
+        </div>
+        <section class="recent-expenses">
+            <h3 class="section-title d-flex align-items-center">
+                <i class="fas fa-receipt mr-2"></i> Recent Expenses
+                <button class="btn btn-text ml-auto" onclick="viewAllExpenses()">View All</button>
+            </h3>
+            <div id="expense-list" class="expense-list grid gap-3">
+                <!-- Expenses will be rendered here -->
+            </div>
+        </section>
+        <section class="quick-insights card mt-4">
+            <h3 class="section-title d-flex align-items-center">
+                <i class="fas fa-lightbulb mr-2"></i> Quick Insights
+            </h3>
+            <div class="insights-grid">
+                <div class="insight-item positive">
+                    <i class="fas fa-arrow-up"></i>
+                    <p>Groceries down 10% this month</p>
+                </div>
+                <div class="insight-item warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <p>Utilities up 15% - check for leaks?</p>
+                </div>
+                <div class="insight-item">
+                    <i class="fas fa-balance-scale"></i>
+                    <p>Equity score: 95% fair</p>
+                </div>
+            </div>
+        </section>
+        <section class="groups-section mt-4">
+            <h3 class="section-title d-flex align-items-center">
+                <i class="fas fa-user-friends mr-2"></i> Your Groups
+            </h3>
+            <div class="groups-grid">
+                <div class="group-card">
+                    <div class="group-cover" style="background-image: url('https://via.placeholder.com/300x100?text=Flat+101');"></div>
+                    <h4>Flat 101</h4>
+                    <p>3 members • Balance: NPR 300</p>
+                    <button class="btn btn-secondary btn-small">View</button>
+                </div>
+                <div class="group-card">
+                    <div class="group-cover" style="background-image: url('https://via.placeholder.com/300x100?text=College+Buddies');"></div>
+                    <h4>College Buddies</h4>
+                    <p>4 members • Balance: NPR -200</p>
+                    <button class="btn btn-secondary btn-small">View</button>
+                </div>
+                <div class="group-card add-group">
+                    <i class="fas fa-plus fa-3x"></i>
+                    <p>Add New Group</p>
+                </div>
+            </div>
+        </section>
+        <section class="mini-chart card mt-4">
+            <h3 class="section-title d-flex align-items-center">
+                <i class="fas fa-chart-pie mr-2"></i> Expense Breakdown
+            </h3>
+            <canvas id="expense-chart" height="200"></canvas>
+        </section>
+    </div>
+    <nav class="fixed-bottom-nav shadow-lg">
+        <a href="add-expense.html" class="action-btn active">
+            <i class="fas fa-plus"></i>
+            <span>Add</span>
+        </a>
+        <a href="settlement.html" class="action-btn">
+            <i class="fas fa-handshake-alt"></i>
+            <span>Settle</span>
+        </a>
+        <a href="analytics.html" class="action-btn">
+            <i class="fas fa-chart-bar"></i>
+            <span>Analytics</span>
+        </a>
+        <a href="profile.html" class="action-btn">
+            <i class="fas fa-user-circle"></i>
+            <span>Profile</span>
+        </a>
+    </nav>
+    <script src="scripts.js"></script>
+</body>
+</html>
