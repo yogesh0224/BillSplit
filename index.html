@@ -1,20 +1,999 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BillSplit</title>
-    <style>body { background: linear-gradient(135deg, #4CAF50, #2196F3); color:white; display:flex; align-items:center; justify-content:center; height:100vh; font-family:Roboto; }</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BillSplit Nepal</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    body { font-family: 'Inter', system-ui, sans-serif; }
+    .view { display: none; }
+    .view.active { display: block; }
+    .expense-card { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+    .expense-card:active { transform: scale(0.97); }
+    .modal { animation: slideUp 0.3s cubic-bezier(0.32, 0.72, 0, 1); }
+    @keyframes slideUp {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+    .confetti {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      pointer-events: none; z-index: 9999;
+    }
+    .notification-dot {
+      animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+    }
+    .sidebar-item { transition: all 0.2s; }
+    .sidebar-item:hover { background-color: #f1f5f9; }
+    .dark .sidebar-item:hover { background-color: #27272a; }
+  </style>
 </head>
-<body>
-    <h1 style="font-size:3.5rem; text-align:center;">
-        BillSplit<br>
-        <small style="opacity:0.9; font-size:1.2rem;">Loading your flat...</small>
-    </h1>
-    <script>
-        setTimeout(() => {
-            window.location.href = localStorage.getItem('appState') ? 'dashboard.html' : 'onboarding.html';
-        }, 1200);
-    </script>
+<body class="bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 min-h-screen">
+  <!-- HEADER -->
+  <header class="bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 fixed top-0 left-0 right-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 lg:px-6 h-14 flex items-center justify-between">
+      <div class="flex items-center gap-x-2">
+        <div class="w-7 h-7 bg-emerald-500 rounded-2xl flex items-center justify-center text-white text-[15px] font-bold">BS</div>
+        <span class="font-semibold tracking-tighter text-2xl">BillSplit</span>
+      </div>
+     
+      <div class="flex items-center gap-x-6">
+        <!-- Notification Bell -->
+        <button onclick="showNotifications()" class="relative">
+          <i data-lucide="bell" class="w-6 h-6"></i>
+          <span id="notif-badge"
+                class="notification-dot absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center hidden">
+            0
+          </span>
+        </button>
+        <button onclick="toggleDarkMode()" class="w-9 h-9 flex items-center justify-center rounded-2xl hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">
+          <i data-lucide="moon" id="moon-icon" class="w-5 h-5"></i>
+          <i data-lucide="sun" id="sun-icon" class="w-5 h-5 hidden"></i>
+        </button>
+        <div onclick="switchView('profile')" class="cursor-pointer">
+          <img src="https://i.pravatar.cc/128?u=yogesh" alt="Yogesh" class="w-8 h-8 rounded-2xl object-cover ring-2 ring-emerald-200 dark:ring-emerald-800">
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="flex max-w-7xl mx-auto pt-14">
+
+    <!-- DESKTOP SIDEBAR -->
+    <div class="hidden lg:flex w-72 border-r border-zinc-200 dark:border-zinc-800 min-h-[calc(100vh-3.5rem)] flex-col py-8 px-6 bg-white dark:bg-zinc-900">
+      <div onclick="switchView('dashboard')" class="sidebar-item flex items-center gap-3 px-5 py-3.5 rounded-3xl cursor-pointer text-emerald-600 font-medium">Dashboard</div>
+      <div onclick="switchView('groups')" class="sidebar-item flex items-center gap-3 px-5 py-3.5 rounded-3xl cursor-pointer">Groups</div>
+      <div onclick="switchView('activity')" class="sidebar-item flex items-center gap-3 px-5 py-3.5 rounded-3xl cursor-pointer">Activity</div>
+      <div onclick="switchView('settlement')" class="sidebar-item flex items-center gap-3 px-5 py-3.5 rounded-3xl cursor-pointer">Settlement</div>
+      <div onclick="switchView('profile')" class="sidebar-item flex items-center gap-3 px-5 py-3.5 rounded-3xl cursor-pointer">Profile & Insights</div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="flex-1 p-4 lg:p-10">
+      <!-- ONBOARDING -->
+      <div id="onboarding-screen" class="view active fixed inset-0 bg-white dark:bg-zinc-950 z-[100] flex flex-col items-center justify-center px-6 text-center">
+        <div class="w-28 h-28 bg-emerald-100 dark:bg-emerald-900/50 rounded-3xl flex items-center justify-center mb-10">
+          <i data-lucide="handshake" class="w-16 h-16 text-emerald-600"></i>
+        </div>
+        <h1 class="text-5xl font-semibold tracking-tighter mb-3">Namaste, Yogesh 👋</h1>
+        <p class="text-xl text-zinc-500 dark:text-zinc-400 max-w-xs">Fair bills for Flat 101 in Kathmandu.<br>No more “who owes whom” fights.</p>
+        <button onclick="completeOnboarding()"
+                class="mt-16 w-full max-w-xs bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-4 rounded-3xl text-lg transition-all active:scale-95">
+          Let's split bills
+        </button>
+      </div>
+      <!-- DASHBOARD -->
+      <div id="view-dashboard" class="view">
+        <div class="mb-6">
+          <p class="text-emerald-600 font-medium text-sm">Flat 101 • Kathmandu</p>
+          <h1 class="text-3xl font-semibold tracking-tight">Good evening, Yogesh</h1>
+        </div>
+        <!-- TOTAL BALANCE -->
+        <div class="bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-3xl p-6 mb-8 shadow-xl shadow-emerald-500/30">
+          <div class="flex justify-between items-start">
+            <div>
+              <p id="owed-label" class="text-emerald-100 text-sm">You are owed</p>
+              <p id="total-owed" class="text-5xl font-semibold tracking-tighter">NPR 0</p>
+            </div>
+            <button onclick="switchView('settlement')"
+                    class="bg-white/20 hover:bg-white/30 px-5 py-2 rounded-2xl text-sm font-medium backdrop-blur-md flex items-center gap-x-2">
+              <i data-lucide="hand-coins" class="w-4 h-4"></i>
+              Settle now
+            </button>
+          </div>
+        </div>
+        <!-- QUICK GROUPS -->
+        <div class="mb-8">
+          <div class="flex items-center justify-between mb-4 px-1">
+            <p class="font-semibold text-lg">Your groups</p>
+            <button onclick="switchView('groups')" class="text-emerald-600 text-sm font-medium flex items-center gap-x-1">
+              All <i data-lucide="chevron-right" class="w-4 h-4"></i>
+            </button>
+          </div>
+          <div id="groups-grid" class="grid grid-cols-1 lg:grid-cols-2 gap-3">
+            <!-- JS -->
+          </div>
+        </div>
+        <!-- RECENT -->
+        <div>
+          <div class="flex items-center justify-between mb-4 px-1">
+            <p class="font-semibold text-lg">Recent expenses</p>
+            <button onclick="switchView('activity')" class="text-emerald-600 text-sm font-medium">All activity →</button>
+          </div>
+          <div id="recent-expenses" class="space-y-3">
+            <!-- JS -->
+          </div>
+        </div>
+      </div>
+      <!-- GROUPS VIEW -->
+      <div id="view-groups" class="view">
+        <div class="flex items-center justify-between mb-6 px-4 lg:px-0">
+          <h2 class="font-semibold text-2xl">All Groups</h2>
+          <button onclick="showCreateGroupModal()" class="bg-emerald-600 text-white px-4 py-2 rounded-2xl text-sm font-medium">New Group</button>
+        </div>
+        <div id="all-groups-list" class="space-y-4 px-4 lg:px-0">
+          <!-- JS -->
+        </div>
+      </div>
+      <!-- ACTIVITY VIEW -->
+      <div id="view-activity" class="view">
+        <h2 class="font-semibold text-2xl mb-6 px-4 lg:px-0">All Expenses</h2>
+        <div id="all-expenses-list" class="space-y-3 px-4 lg:px-0">
+          <!-- JS -->
+        </div>
+      </div>
+      <!-- SETTLEMENT VIEW -->
+      <div id="view-settlement" class="view">
+        <h2 class="font-semibold text-2xl mb-6 px-4 lg:px-0">Smart Settlement</h2>
+        <p class="text-zinc-500 mb-6 px-4 lg:px-0">Minimum transactions to clear all balances</p>
+        <div id="settlement-list" class="space-y-4 px-4 lg:px-0">
+          <!-- JS -->
+        </div>
+        <button onclick="confirmSettlement()"
+                class="mt-10 w-full max-w-xl bg-emerald-600 text-white py-4 rounded-3xl font-semibold text-lg active:scale-95 transition-all mx-auto block lg:max-w-none">
+          Confirm Settlement
+        </button>
+      </div>
+      <!-- PROFILE VIEW -->
+      <div id="view-profile" class="view">
+        <div class="max-w-4xl mx-auto px-4 lg:px-0">
+          <div class="flex flex-col items-center py-8">
+            <div class="w-24 h-24 rounded-3xl overflow-hidden mb-4 ring-4 ring-emerald-100 dark:ring-zinc-800">
+              <img src="https://i.pravatar.cc/128?u=yogesh" class="w-full h-full object-cover">
+            </div>
+            <h2 class="text-3xl font-semibold">Yogesh</h2>
+            <p class="text-zinc-500">yogesh@example.com</p>
+            <p class="text-emerald-600 mt-1">Flat 101 • Kathmandu</p>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-12">
+            <div class="bg-white dark:bg-zinc-900 rounded-3xl p-4">
+              <p class="text-sm text-zinc-500">Spent this month</p>
+              <p id="profile-spent" class="text-3xl font-semibold mt-2">NPR 0</p>
+            </div>
+            <div class="bg-white dark:bg-zinc-900 rounded-3xl p-4">
+              <p class="text-sm text-zinc-500">Avg per bill</p>
+              <p id="profile-avg" class="text-3xl font-semibold mt-2">NPR 0</p>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="bg-white dark:bg-zinc-900 rounded-3xl p-6">
+              <h3 class="font-semibold mb-4">Spending by Category</h3>
+              <canvas id="pieChart" height="200"></canvas>
+            </div>
+            <div class="bg-white dark:bg-zinc-900 rounded-3xl p-6">
+              <h3 class="font-semibold mb-4">Monthly Trend</h3>
+              <canvas id="lineChart" height="200"></canvas>
+            </div>
+          </div>
+          <div class="space-y-6 mt-8">
+            <button onclick="toggleDarkMode()"
+                    class="w-full flex items-center justify-center gap-x-3 bg-white dark:bg-zinc-900 py-4 rounded-3xl font-medium">
+              <i data-lucide="moon" class="w-5 h-5"></i>
+              Toggle Dark Mode
+            </button>
+            <button onclick="exportReport()"
+                    class="w-full flex items-center justify-center gap-x-3 bg-white dark:bg-zinc-900 py-4 rounded-3xl font-medium">
+              <i data-lucide="download" class="w-5 h-5"></i>
+              Export full report (PDF)
+            </button>
+            <button onclick="logout()" class="w-full text-red-600 font-medium py-4">Log out</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- MOBILE BOTTOM NAV -->
+  <nav class="lg:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-zinc-900 border-t border-zinc-200 dark:border-zinc-800 z-50">
+    <div class="grid grid-cols-5 h-16 text-[10px]">
+      <button onclick="switchView('dashboard')" class="nav-btn active flex flex-col items-center justify-center text-emerald-600">
+        <i data-lucide="home" class="w-5 h-5"></i>
+        <span>Home</span>
+      </button>
+      <button onclick="switchView('groups')" class="nav-btn flex flex-col items-center justify-center">
+        <i data-lucide="users" class="w-5 h-5"></i>
+        <span>Groups</span>
+      </button>
+      <button onclick="showAddModal()" class="flex flex-col items-center justify-center -mt-6">
+        <div class="w-14 h-14 bg-emerald-600 rounded-3xl flex items-center justify-center shadow-2xl shadow-emerald-500/40">
+          <i data-lucide="plus" class="w-7 h-7 text-white"></i>
+        </div>
+      </button>
+      <button onclick="switchView('activity')" class="nav-btn flex flex-col items-center justify-center">
+        <i data-lucide="receipt" class="w-5 h-5"></i>
+        <span>Activity</span>
+      </button>
+      <button onclick="switchView('profile')" class="nav-btn flex flex-col items-center justify-center">
+        <i data-lucide="user" class="w-5 h-5"></i>
+        <span>Me</span>
+      </button>
+    </div>
+  </nav>
+  <!-- ADD EXPENSE MODAL -->
+  <div id="add-modal" class="hidden fixed inset-0 bg-black/70 flex items-end z-[200]">
+    <div class="modal bg-white dark:bg-zinc-900 w-full rounded-t-3xl max-h-[92vh] overflow-auto">
+      <div class="sticky top-0 bg-white dark:bg-zinc-900 border-b px-6 py-4 flex items-center justify-between z-10">
+        <h3 class="text-2xl font-semibold">New Expense</h3>
+        <button onclick="hideAddModal()" class="p-2">
+          <i data-lucide="x" class="w-6 h-6"></i>
+        </button>
+      </div>
+     
+      <div class="p-6 space-y-6">
+        <div>
+          <label class="text-sm font-medium text-zinc-500 block mb-1.5">Group</label>
+          <select id="exp-group" class="w-full bg-zinc-100 dark:bg-zinc-800 border-0 rounded-2xl px-5 py-4 text-lg">
+            <!-- JS populated -->
+          </select>
+        </div>
+        <div>
+          <label class="text-sm font-medium text-zinc-500 block mb-1.5">What did you buy?</label>
+          <input id="exp-title" type="text" placeholder="Groceries at Bhatbhateni"
+                 class="w-full bg-zinc-100 dark:bg-zinc-800 border-0 rounded-2xl px-5 py-4 text-lg focus:outline-none focus:ring-2 focus:ring-emerald-500">
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="text-sm font-medium text-zinc-500 block mb-1.5">Amount</label>
+            <div class="relative">
+              <span class="absolute left-5 top-1/2 -translate-y-1/2 text-xl font-medium text-zinc-400">NPR</span>
+              <input id="exp-amount" type="number" placeholder="1850"
+                     class="w-full bg-zinc-100 dark:bg-zinc-800 border-0 rounded-2xl pl-14 pr-5 py-4 text-3xl font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500">
+            </div>
+          </div>
+          <div>
+            <label class="text-sm font-medium text-zinc-500 block mb-1.5">Paid by</label>
+            <select id="exp-payer" class="w-full bg-zinc-100 dark:bg-zinc-800 border-0 rounded-2xl px-5 py-4 text-lg">
+              <!-- JS populated -->
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="text-sm font-medium text-zinc-500 block mb-1.5">Split type</label>
+          <div class="flex gap-2">
+            <button onclick="setSplitType(this)" data-type="equal"
+                    class="split-btn flex-1 py-3 rounded-2xl bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300 font-medium active">Equal</button>
+            <button onclick="setSplitType(this)" data-type="custom"
+                    class="split-btn flex-1 py-3 rounded-2xl bg-zinc-100 dark:bg-zinc-800 font-medium">Custom</button>
+          </div>
+          <div id="custom-split-section" class="hidden mt-4 space-y-4">
+            <!-- JS populated member share inputs -->
+          </div>
+        </div>
+        <div>
+          <label class="text-sm font-medium text-zinc-500 block mb-1.5">Category</label>
+          <div class="grid grid-cols-4 gap-3">
+            <button onclick="selectCategory(this)" data-cat="groceries" class="cat-btn aspect-square bg-amber-100 dark:bg-amber-900 rounded-2xl flex flex-col items-center justify-center">
+              <i data-lucide="shopping-cart" class="w-6 h-6"></i>
+              <span class="text-xs mt-1">Food</span>
+            </button>
+            <button onclick="selectCategory(this)" data-cat="rent" class="cat-btn aspect-square bg-red-100 dark:bg-red-900 rounded-2xl flex flex-col items-center justify-center">
+              <i data-lucide="home" class="w-6 h-6"></i>
+              <span class="text-xs mt-1">Rent</span>
+            </button>
+            <button onclick="selectCategory(this)" data-cat="utilities" class="cat-btn aspect-square bg-blue-100 dark:bg-blue-900 rounded-2xl flex flex-col items-center justify-center">
+              <i data-lucide="zap" class="w-6 h-6"></i>
+              <span class="text-xs mt-1">Bills</span>
+            </button>
+            <button onclick="selectCategory(this)" data-cat="other" class="cat-btn aspect-square bg-zinc-100 dark:bg-zinc-800 rounded-2xl flex flex-col items-center justify-center">
+              <i data-lucide="more-horizontal" class="w-6 h-6"></i>
+              <span class="text-xs mt-1">Other</span>
+            </button>
+          </div>
+        </div>
+        <div>
+          <label class="text-sm font-medium text-zinc-500 block mb-1.5">Date</label>
+          <input id="exp-date" type="date" value="2026-02-25"
+                 class="w-full bg-zinc-100 dark:bg-zinc-800 border-0 rounded-2xl px-5 py-4">
+        </div>
+        <button onclick="addExpense()"
+                class="w-full bg-emerald-600 hover:bg-emerald-700 transition-all text-white font-semibold py-5 rounded-3xl text-lg mt-4">
+          Add & Notify Group • <span id="modal-total">NPR 0</span>
+        </button>
+      </div>
+    </div>
+  </div>
+  <!-- NOTIFICATIONS MODAL -->
+  <div id="notifications-modal" class="hidden fixed inset-0 bg-black/70 flex items-end z-[200]">
+    <div class="modal bg-white dark:bg-zinc-900 w-full rounded-t-3xl max-h-[85vh] overflow-auto">
+      <div class="sticky top-0 bg-white dark:bg-zinc-900 border-b px-6 py-4 flex items-center justify-between z-10">
+        <h3 class="text-2xl font-semibold">Notifications</h3>
+        <button onclick="hideNotifications()" class="p-2">
+          <i data-lucide="x" class="w-6 h-6"></i>
+        </button>
+      </div>
+      <div id="notifications-list" class="p-6 space-y-4">
+        <!-- JS populated -->
+      </div>
+    </div>
+  </div>
+  <!-- CREATE GROUP MODAL -->
+  <div id="create-group-modal" class="hidden fixed inset-0 bg-black/70 flex items-end z-[200]">
+    <div class="modal bg-white dark:bg-zinc-900 w-full rounded-t-3xl p-6">
+      <h3 class="text-2xl font-semibold mb-6">Create New Group</h3>
+      <input id="group-name" type="text" placeholder="Group name" class="w-full bg-zinc-100 dark:bg-zinc-800 rounded-2xl px-5 py-4 mb-4">
+      <button onclick="createGroup()" class="w-full bg-emerald-600 text-white py-4 rounded-3xl font-semibold">Create Group</button>
+    </div>
+  </div>
+  <!-- INVITE MODAL -->
+  <div id="invite-modal" class="hidden fixed inset-0 bg-black/70 flex items-end z-[200]">
+    <div class="modal bg-white dark:bg-zinc-900 w-full rounded-t-3xl p-6">
+      <h3 class="text-2xl font-semibold mb-6">Invite Friend</h3>
+      <input id="friend-name" type="text" placeholder="Friend's name" class="w-full bg-zinc-100 dark:bg-zinc-800 rounded-2xl px-5 py-4 mb-4">
+      <select id="invite-group" class="w-full bg-zinc-100 dark:bg-zinc-800 rounded-2xl px-5 py-4 mb-4">
+        <!-- JS populated -->
+      </select>
+      <button onclick="addMember()" class="w-full bg-emerald-600 text-white py-4 rounded-3xl font-semibold">Add to Group</button>
+    </div>
+  </div>
+  <!-- DISPUTE MODAL -->
+  <div id="dispute-modal" class="hidden fixed inset-0 bg-black/70 flex items-end z-[300]">
+    <div class="modal bg-white dark:bg-zinc-900 w-full rounded-t-3xl p-6">
+      <h3 class="text-2xl font-semibold mb-6">Disagree with Expense</h3>
+      <select id="dispute-reason" class="w-full bg-zinc-100 dark:bg-zinc-800 rounded-2xl px-5 py-4 mb-4">
+        <option value="unrelated">Unrelated expense</option>
+        <option value="wrong_amount">Wrong amount</option>
+        <option value="unfair_split">Unfair split</option>
+        <option value="other">Other</option>
+      </select>
+      <textarea id="dispute-comment" placeholder="Add your comment (optional)" class="w-full h-24 bg-zinc-100 dark:bg-zinc-800 rounded-2xl p-4 mb-4"></textarea>
+      <button onclick="submitDispute()" class="w-full bg-red-600 text-white py-4 rounded-3xl font-semibold">Submit Disagreement</button>
+    </div>
+  </div>
+  <script>
+    let state = {
+      currentUser: "Yogesh",
+      groups: [
+        { id: 1, name: "Flat 101", members: ["Yogesh", "Ram", "Sita"], balance: 0, color: "emerald" },
+        { id: 2, name: "College Buddies", members: ["Yogesh", "Hari", "Shyam"], balance: 0, color: "amber" }
+      ],
+      expenses: [
+        { id: 101, title: "Monthly Rent", amount: 5000, payer: "Ram", date: "2026-02-01", groupId: 1, category: "rent", status: "approved", splits: {} },
+        { id: 102, title: "Bhatbhateni Groceries", amount: 1850, payer: "Yogesh", date: "2026-02-23", groupId: 1, category: "groceries", status: "approved", splits: {} },
+        { id: 103, title: "Electricity Bill", amount: 1240, payer: "Sita", date: "2026-02-20", groupId: 1, category: "utilities", status: "pending", splits: {} }
+      ],
+      notifications: [
+        { id: 1, type: "approval", message: "Sita added Electricity Bill (NPR 1,240) – awaiting approval", date: "2h ago", read: false, expenseId: 103 }
+      ],
+      disputes: [], // New: array to store disputes {expenseId, user, reason, comment}
+      darkMode: localStorage.getItem("darkMode") === "true",
+      onboarded: localStorage.getItem("onboarded") === "true"
+    }
+    function saveState() { localStorage.setItem("billSplitState", JSON.stringify(state)); }
+    function loadState() {
+      const saved = localStorage.getItem("billSplitState")
+      if (saved) state = JSON.parse(saved)
+      if (state.darkMode) document.documentElement.classList.add("dark")
+    }
+    function toggleDarkMode() {
+      state.darkMode = !state.darkMode
+      document.documentElement.classList.toggle("dark", state.darkMode)
+      saveState()
+      lucide.createIcons()
+    }
+    function switchView(view) {
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'))
+      document.getElementById(`view-${view}`).classList.add('active')
+      if (view === 'dashboard') renderDashboard()
+      if (view === 'groups') renderGroups()
+      if (view === 'activity') renderActivity()
+      if (view === 'settlement') renderSettlement()
+      if (view === 'profile') renderProfile()
+    }
+    function updateBalances() {
+      state.groups.forEach(group => {
+        group.balance = 0
+        const groupExpenses = state.expenses.filter(exp => exp.groupId === group.id && exp.status === 'approved')
+        const balances = {}
+        group.members.forEach(m => balances[m] = 0)
+        groupExpenses.forEach(exp => {
+          if (Object.keys(exp.splits).length > 0) {
+            // Custom splits
+            balances[exp.payer] += exp.amount
+            for (const m in exp.splits) {
+              balances[m] -= exp.splits[m]
+            }
+          } else {
+            // Equal splits
+            const share = exp.amount / group.members.length
+            balances[exp.payer] += exp.amount - share
+            group.members.forEach(m => {
+              if (m !== exp.payer) balances[m] -= share
+            })
+          }
+        })
+        group.balance = balances[state.currentUser] || 0
+      })
+    }
+    function showNotifications() {
+      document.getElementById("notifications-modal").classList.remove("hidden")
+      document.getElementById("notifications-modal").classList.add("flex")
+      renderNotifications()
+    }
+    function hideNotifications() {
+      document.getElementById("notifications-modal").classList.add("hidden")
+      document.getElementById("notifications-modal").classList.remove("flex")
+    }
+    function renderNotifications() {
+      const container = document.getElementById("notifications-list")
+      container.innerHTML = ""
+      if (state.notifications.length === 0) {
+        container.innerHTML = `<p class="text-center text-zinc-400 py-12">No new notifications</p>`
+        return
+      }
+      state.notifications.forEach((notif, index) => {
+        const div = document.createElement("div")
+        div.className = `p-5 rounded-3xl ${notif.read ? 'bg-zinc-100 dark:bg-zinc-800' : 'bg-emerald-50 dark:bg-emerald-950 border border-emerald-200 dark:border-emerald-800'}`
+        div.innerHTML = `
+          <div class="flex gap-4">
+            <div class="w-8 h-8 bg-emerald-100 dark:bg-emerald-900 rounded-2xl flex-shrink-0 flex items-center justify-center">
+              <i data-lucide="bell-ring" class="w-4 h-4 text-emerald-600"></i>
+            </div>
+            <div class="flex-1">
+              <p class="text-sm leading-snug">${notif.message}</p>
+              <p class="text-xs text-zinc-500 mt-2">${notif.date}</p>
+              ${notif.expenseId ? `
+                <button onclick="approveFromNotification(${notif.expenseId}, ${index}); event.stopImmediatePropagation()"
+                        class="mt-3 text-xs bg-emerald-600 text-white px-4 py-1.5 rounded-2xl font-medium">
+                  Approve now
+                </button>
+              ` : ''}
+            </div>
+          </div>
+        `
+        container.appendChild(div)
+      })
+    }
+    function approveFromNotification(expenseId, notifIndex) {
+      const exp = state.expenses.find(e => e.id === expenseId)
+      if (exp) {
+        exp.status = "approved"
+        state.notifications.splice(notifIndex, 1)
+        saveState()
+        hideNotifications()
+        showToast("Bill approved! Group notified.", "success")
+        confettiBurst()
+        updateBalances()
+        renderCurrentViews()
+      }
+    }
+    function addNotification(message, expenseId = null) {
+      state.notifications.unshift({
+        id: Date.now(),
+        type: "new_expense",
+        message: message,
+        date: "just now",
+        read: false,
+        expenseId: expenseId
+      })
+      saveState()
+      updateNotificationBadge()
+    }
+    function updateNotificationBadge() {
+      const unread = state.notifications.filter(n => !n.read).length
+      const badge = document.getElementById("notif-badge")
+      if (unread > 0) {
+        badge.textContent = unread > 9 ? "9+" : unread
+        badge.classList.remove("hidden")
+      } else {
+        badge.classList.add("hidden")
+      }
+    }
+    function renderCurrentViews() {
+      if (document.getElementById("view-dashboard").classList.contains("active")) renderDashboard()
+      if (document.getElementById("view-activity").classList.contains("active")) renderActivity()
+      if (document.getElementById("view-settlement").classList.contains("active")) renderSettlement()
+      if (document.getElementById("view-profile").classList.contains("active")) renderProfile()
+    }
+    function renderDashboard() {
+      updateBalances()
+      let totalOwed = 0
+      state.groups.forEach(g => totalOwed += g.balance)
+      const owedLabel = document.getElementById("owed-label")
+      owedLabel.textContent = totalOwed >= 0 ? "You are owed" : "You owe"
+      document.getElementById("total-owed").textContent = `NPR ${Math.abs(totalOwed).toLocaleString()}`
+      const grid = document.getElementById("groups-grid")
+      grid.innerHTML = ""
+      state.groups.forEach(group => {
+        const div = document.createElement("div")
+        div.className = `bg-white dark:bg-zinc-900 rounded-3xl p-5 cursor-pointer border border-transparent hover:border-emerald-200`
+        div.innerHTML = `
+          <div class="flex justify-between items-start">
+            <div>
+              <p class="font-semibold text-lg">${group.name}</p>
+              <p class="text-xs text-zinc-500">${group.members.length} members</p>
+            </div>
+            <div class="text-right">
+              <p class="text-sm ${group.balance >= 0 ? 'text-emerald-600' : 'text-red-500'} font-medium">
+                ${group.balance >= 0 ? '+' : ''}NPR ${Math.abs(group.balance).toLocaleString()}
+              </p>
+            </div>
+          </div>
+        `
+        grid.appendChild(div)
+      })
+      const recent = document.getElementById("recent-expenses")
+      recent.innerHTML = ""
+      state.expenses.slice(0, 5).forEach(exp => {
+        const div = document.createElement("div")
+        div.className = "expense-card bg-white dark:bg-zinc-900 rounded-3xl p-5 flex gap-4 items-center"
+        div.innerHTML = `
+          <div class="w-10 h-10 bg-emerald-100 dark:bg-emerald-900 rounded-2xl flex items-center justify-center flex-shrink-0">
+            <i data-lucide="${getCategoryIcon(exp.category)}" class="w-5 h-5 text-emerald-600"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="font-medium truncate">${exp.title}</p>
+            <p class="text-xs text-zinc-500">${exp.date} • ${exp.payer}</p>
+          </div>
+          <div class="text-right">
+            <p class="font-semibold text-lg">NPR ${exp.amount.toLocaleString()}</p>
+            ${exp.status === "pending" ? `
+              <div class="flex gap-2 mt-2">
+                <button onclick="approveExpense(${exp.id}); event.stopImmediatePropagation()" class="text-xs bg-emerald-600 text-white px-3 py-1 rounded-2xl">Approve</button>
+                <button onclick="showDisputeModal(${exp.id}); event.stopImmediatePropagation()" class="text-xs bg-red-600 text-white px-3 py-1 rounded-2xl">Disagree</button>
+              </div>
+            ` : `<p class="text-xs text-emerald-600">${exp.status}</p>`}
+          </div>
+        `
+        recent.appendChild(div)
+      })
+    }
+    function getCategoryIcon(cat) {
+      const icons = {groceries: 'shopping-cart', rent: 'home', utilities: 'zap', other: 'more-horizontal'}
+      return icons[cat] || 'receipt'
+    }
+    function renderGroups() {
+      const container = document.getElementById("all-groups-list")
+      container.innerHTML = ""
+      state.groups.forEach(group => {
+        const el = document.createElement("div")
+        el.className = "bg-white dark:bg-zinc-900 rounded-3xl p-6 flex justify-between items-center"
+        el.innerHTML = `
+          <div>
+            <p class="font-semibold text-xl">${group.name}</p>
+            <p class="text-sm text-zinc-500">${group.members.join(", ")}</p>
+          </div>
+          <div class="text-right">
+            <p class="font-medium ${group.balance >= 0 ? 'text-emerald-600' : 'text-red-500'}">NPR ${Math.abs(group.balance).toLocaleString()}</p>
+            <button onclick="showInviteModal(${group.id})" class="text-xs text-emerald-600 mt-2">Invite</button>
+          </div>
+        `
+        container.appendChild(el)
+      })
+    }
+    function renderActivity() {
+      const container = document.getElementById("all-expenses-list")
+      container.innerHTML = ""
+      state.expenses.forEach(exp => {
+        const el = document.createElement("div")
+        el.className = "expense-card bg-white dark:bg-zinc-900 rounded-3xl p-5 flex gap-4 items-center"
+        el.innerHTML = `
+          <div class="w-10 h-10 bg-emerald-100 dark:bg-emerald-900 rounded-2xl flex items-center justify-center flex-shrink-0">
+            <i data-lucide="${getCategoryIcon(exp.category)}" class="w-5 h-5 text-emerald-600"></i>
+          </div>
+          <div class="flex-1">
+            <p class="font-medium">${exp.title}</p>
+            <p class="text-xs text-zinc-500 mt-1">${exp.date} • Paid by ${exp.payer}</p>
+          </div>
+          <div class="text-right">
+            <p class="font-semibold text-2xl">NPR ${exp.amount.toLocaleString()}</p>
+            ${exp.status === "pending" ? `
+              <div class="flex gap-2 mt-2">
+                <button onclick="approveExpense(${exp.id}); event.stopImmediatePropagation()" class="text-xs bg-emerald-600 text-white px-4 py-2 rounded-2xl font-medium">Approve Bill</button>
+                <button onclick="showDisputeModal(${exp.id}); event.stopImmediatePropagation()" class="text-xs bg-red-600 text-white px-4 py-2 rounded-2xl font-medium">Disagree</button>
+              </div>
+            ` : `<p class="text-xs text-emerald-600 font-medium">Approved ✓</p>`}
+          </div>
+        `
+        container.appendChild(el)
+      })
+    }
+    function renderSettlement() {
+      updateBalances()
+      const container = document.getElementById("settlement-list")
+      container.innerHTML = ""
+      state.groups.forEach(group => {
+        const groupExpenses = state.expenses.filter(exp => exp.groupId === group.id && exp.status === 'approved')
+        const balances = {}
+        group.members.forEach(m => balances[m] = 0)
+        groupExpenses.forEach(exp => {
+          if (Object.keys(exp.splits).length > 0) {
+            // Custom splits
+            balances[exp.payer] += exp.amount
+            for (const m in exp.splits) {
+              balances[m] -= exp.splits[m]
+            }
+          } else {
+            // Equal splits
+            const share = exp.amount / group.members.length
+            balances[exp.payer] += exp.amount - share
+            group.members.forEach(m => {
+              if (m !== exp.payer) balances[m] -= share
+            })
+          }
+        })
+        const debtors = group.members.filter(m => balances[m] < 0 && m !== state.currentUser)
+        debtors.forEach(debtor => {
+          const amount = Math.abs(balances[debtor])
+          const div = document.createElement("div")
+          div.className = "bg-white dark:bg-zinc-900 rounded-3xl p-5 flex items-center justify-between"
+          div.innerHTML = `
+            <div><p class="font-medium">${debtor} → ${state.currentUser} (${group.name})</p></div>
+            <p class="font-semibold text-emerald-600">NPR ${amount.toLocaleString()}</p>
+          `
+          container.appendChild(div)
+        })
+      })
+      if (container.innerHTML === "") {
+        container.innerHTML = `<p class="text-center text-zinc-500 py-8">All settled up! No payments needed.</p>`
+      }
+    }
+    function renderProfile() {
+      updateBalances()
+      const currentMonth = new Date().toISOString().slice(0,7)
+      const userExpenses = state.expenses.filter(exp => exp.payer === state.currentUser && exp.date.startsWith(currentMonth))
+      const spent = userExpenses.reduce((sum, exp) => sum + exp.amount, 0)
+      document.getElementById("profile-spent").textContent = `NPR ${spent.toLocaleString()}`
+      const avg = userExpenses.length > 0 ? (spent / userExpenses.length).toFixed(0) : 0
+      document.getElementById("profile-avg").textContent = `NPR ${avg}`
+      renderProfileCharts()
+    }
+    function renderProfileCharts() {
+      const categories = {}
+      state.expenses.forEach(exp => {
+        if (exp.status === 'approved') {
+          categories[exp.category] = (categories[exp.category] || 0) + exp.amount
+        }
+      })
+      new Chart(document.getElementById("pieChart"), {
+        type: "pie",
+        data: {
+          labels: Object.keys(categories),
+          datasets: [{ data: Object.values(categories), backgroundColor: ["#fbbf24", "#ef4444", "#3b82f6", "#8b5cf6"] }]
+        },
+        options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+      })
+      const months = {}
+      state.expenses.forEach(exp => {
+        if (exp.status === 'approved') {
+          const month = exp.date.slice(0,7)
+          months[month] = (months[month] || 0) + exp.amount
+        }
+      })
+      new Chart(document.getElementById("lineChart"), {
+        type: "line",
+        data: {
+          labels: Object.keys(months).sort(),
+          datasets: [{ label: "Spending", data: Object.values(months), borderColor: "#10b981", tension: 0.4 }]
+        },
+        options: { responsive: true, scales: { y: { beginAtZero: true } } }
+      })
+    }
+    let currentSplitType = "equal"
+    let selectedCategory = "other"
+    function showAddModal() {
+      document.getElementById("add-modal").classList.remove("hidden")
+      document.getElementById("add-modal").classList.add("flex")
+      document.getElementById("exp-title").value = ""
+      document.getElementById("exp-amount").value = ""
+      document.getElementById("exp-date").value = new Date().toISOString().slice(0,10)
+      populateGroupSelect()
+      populatePayerSelect(1) // Default to first group
+      setSplitType(document.querySelector('[data-type="equal"]'))
+      selectCategory(document.querySelector('[data-cat="other"]'))
+      document.getElementById("exp-group").addEventListener('change', (e) => populatePayerSelect(parseInt(e.target.value)))
+    }
+    function hideAddModal() {
+      document.getElementById("add-modal").classList.add("hidden")
+      document.getElementById("add-modal").classList.remove("flex")
+    }
+    function populateGroupSelect() {
+      const select = document.getElementById("exp-group")
+      select.innerHTML = ""
+      state.groups.forEach(group => {
+        const option = document.createElement("option")
+        option.value = group.id
+        option.textContent = group.name
+        select.appendChild(option)
+      })
+    }
+    function populatePayerSelect(groupId) {
+      const group = state.groups.find(g => g.id === groupId)
+      const select = document.getElementById("exp-payer")
+      select.innerHTML = ""
+      group.members.forEach(m => {
+        const option = document.createElement("option")
+        option.value = m
+        option.textContent = m
+        select.appendChild(option)
+      })
+      populateCustomSplits(groupId)
+    }
+    function populateCustomSplits(groupId) {
+      const group = state.groups.find(g => g.id === groupId)
+      const section = document.getElementById("custom-split-section")
+      section.innerHTML = ""
+      group.members.forEach(m => {
+        const div = document.createElement("div")
+        div.innerHTML = `
+          <label class="text-sm font-medium text-zinc-500 block mb-1.5">${m}'s share</label>
+          <input data-member="${m}" type="number" placeholder="0" class="w-full bg-zinc-100 dark:bg-zinc-800 rounded-2xl px-5 py-4">
+        `
+        section.appendChild(div)
+      })
+    }
+    function setSplitType(btn) {
+      document.querySelectorAll('.split-btn').forEach(b => {
+        b.classList.remove("active", "bg-emerald-100", "dark:bg-emerald-900", "text-emerald-700", "dark:text-emerald-300")
+        b.classList.add("bg-zinc-100", "dark:bg-zinc-800", "text-zinc-900", "dark:text-zinc-100")
+      })
+      btn.classList.add("active", "bg-emerald-100", "dark:bg-emerald-900", "text-emerald-700", "dark:text-emerald-300")
+      currentSplitType = btn.dataset.type
+      document.getElementById("custom-split-section").classList.toggle("hidden", currentSplitType !== "custom")
+    }
+    function selectCategory(btn) {
+      document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove("ring-2", "ring-emerald-500"))
+      btn.classList.add("ring-2", "ring-emerald-500")
+      selectedCategory = btn.dataset.cat
+    }
+    function addExpense() {
+      const title = document.getElementById("exp-title").value.trim() || "Untitled expense"
+      const amount = parseFloat(document.getElementById("exp-amount").value) || 0
+      const payer = document.getElementById("exp-payer").value
+      const date = document.getElementById("exp-date").value
+      const groupId = parseInt(document.getElementById("exp-group").value)
+      if (amount <= 0) {
+        alert("Please enter a valid amount")
+        return
+      }
+      const splits = {}
+      if (currentSplitType === "custom") {
+        let totalShare = 0
+        document.querySelectorAll('#custom-split-section input').forEach(input => {
+          const share = parseFloat(input.value) || 0
+          splits[input.dataset.member] = share
+          totalShare += share
+        })
+        if (totalShare !== amount) {
+          alert("Custom shares must add up to the total amount")
+          return
+        }
+      }
+      const newExpense = {
+        id: Date.now(),
+        title,
+        amount,
+        payer,
+        date,
+        groupId,
+        category: selectedCategory,
+        status: "pending",
+        splits
+      }
+      state.expenses.unshift(newExpense)
+      // Notify group
+      const notifMsg = `${payer} added "${title}" (NPR ${amount}) – awaiting group approval`
+      addNotification(notifMsg, newExpense.id)
+      saveState()
+      hideAddModal()
+      showToast(`Expense added! Group notified for approval.`, "success")
+      confettiBurst()
+      updateBalances()
+      renderCurrentViews()
+      updateNotificationBadge()
+    }
+    function showCreateGroupModal() {
+      document.getElementById("create-group-modal").classList.remove("hidden")
+    }
+    function createGroup() {
+      const name = document.getElementById("group-name").value.trim()
+      if (name) {
+        const newGroup = {
+          id: Date.now(),
+          name,
+          members: [state.currentUser],
+          balance: 0,
+          color: "emerald" // Default
+        }
+        state.groups.push(newGroup)
+        saveState()
+        document.getElementById("create-group-modal").classList.add("hidden")
+        showToast(`Group "${name}" created!`, "success")
+        confettiBurst()
+        renderGroups()
+      }
+    }
+    let currentInviteGroupId = null
+    function showInviteModal(groupId) {
+      currentInviteGroupId = groupId
+      populateInviteGroupSelect()
+      document.getElementById("invite-modal").classList.remove("hidden")
+    }
+    function populateInviteGroupSelect() {
+      const select = document.getElementById("invite-group")
+      select.innerHTML = ""
+      state.groups.forEach(group => {
+        const option = document.createElement("option")
+        option.value = group.id
+        option.textContent = group.name
+        select.appendChild(option)
+      })
+    }
+    function addMember() {
+      const name = document.getElementById("friend-name").value.trim()
+      const groupId = parseInt(document.getElementById("invite-group").value || currentInviteGroupId)
+      const group = state.groups.find(g => g.id === groupId)
+      if (name && group && !group.members.includes(name)) {
+        group.members.push(name)
+        updateBalances()
+        saveState()
+        document.getElementById("invite-modal").classList.add("hidden")
+        showToast(`Added ${name} to ${group.name}!`, "success")
+        confettiBurst()
+        renderGroups()
+        renderCurrentViews()
+      }
+    }
+    let currentDisputeExpenseId = null
+    function showDisputeModal(expenseId) {
+      currentDisputeExpenseId = expenseId
+      document.getElementById("dispute-modal").classList.remove("hidden")
+    }
+    function submitDispute() {
+      const reason = document.getElementById("dispute-reason").value
+      const comment = document.getElementById("dispute-comment").value.trim()
+      const exp = state.expenses.find(e => e.id === currentDisputeExpenseId)
+      if (exp) {
+        exp.status = "disputed"
+        state.disputes.push({
+          expenseId: currentDisputeExpenseId,
+          user: state.currentUser,
+          reason,
+          comment
+        })
+        const notifMsg = `${state.currentUser} disagreed with "${exp.title}" (Reason: ${reason}${comment ? ' - ' + comment : ''})`
+        addNotification(notifMsg, currentDisputeExpenseId)
+        saveState()
+        document.getElementById("dispute-modal").classList.add("hidden")
+        showToast("Disagreement submitted! Group notified.", "warning")
+        renderCurrentViews()
+      }
+    }
+    function approveExpense(id) {
+      const exp = state.expenses.find(e => e.id === id)
+      if (!exp) return
+      exp.status = "approved"
+      // Remove related notification
+      state.notifications = state.notifications.filter(n => n.expenseId !== id)
+      saveState()
+      showToast("Bill approved! All group members notified.", "success")
+      confettiBurst()
+      updateBalances()
+      renderCurrentViews()
+      updateNotificationBadge()
+    }
+    function confirmSettlement() {
+      confettiBurst()
+      showToast("Settlement confirmed! Group notified.", "success")
+      setTimeout(() => switchView("dashboard"), 1600)
+    }
+    function showToast(message, type = "success") {
+      const toast = document.createElement("div")
+      toast.style.position = "fixed"
+      toast.style.bottom = "100px"
+      toast.style.left = "50%"
+      toast.style.transform = "translateX(-50%)"
+      toast.style.padding = "14px 24px"
+      toast.style.borderRadius = "9999px"
+      toast.style.fontWeight = "500"
+      toast.style.boxShadow = "0 20px 25px -5px rgb(0 0 0 / 0.1)"
+      toast.style.zIndex = "99999"
+      toast.style.whiteSpace = "nowrap"
+     
+      if (type === "success") {
+        toast.style.backgroundColor = "#10b981"
+        toast.style.color = "white"
+      } else if (type === "warning") {
+        toast.style.backgroundColor = "#fbbf24"
+        toast.style.color = "black"
+      } else {
+        toast.style.backgroundColor = "#27272a"
+        toast.style.color = "white"
+      }
+     
+      toast.textContent = message
+      document.body.appendChild(toast)
+      setTimeout(() => {
+        toast.style.transition = "all 0.3s ease"
+        toast.style.opacity = "0"
+        toast.style.transform = "translateX(-50%) translateY(20px)"
+        setTimeout(() => toast.remove(), 300)
+      }, 2800)
+    }
+    function confettiBurst() {
+      const colors = ["#10b981", "#34d399", "#6ee7b7", "#a7f3d0"]
+      for (let i = 0; i < 80; i++) {
+        const c = document.createElement("div")
+        c.style.left = Math.random() * 100 + "vw"
+        c.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)]
+        c.style.width = "8px"
+        c.style.height = "8px"
+        c.style.position = "fixed"
+        c.style.top = "-10px"
+        c.style.borderRadius = "2px"
+        c.style.opacity = Math.random() + 0.5
+        c.style.transform = `rotate(${Math.random() * 360}deg)`
+        document.body.appendChild(c)
+        const duration = Math.random() * 3 + 2.5
+        c.animate([
+          { transform: `translateY(0) rotate(0deg)`, opacity: 1 },
+          { transform: `translateY(${window.innerHeight + 100}px) rotate(${Math.random() * 800 - 400}deg)`, opacity: 0 }
+        ], { duration: duration * 1000, easing: "ease-out" })
+        setTimeout(() => c.remove(), duration * 1000 + 100)
+      }
+    }
+    function completeOnboarding() {
+      state.onboarded = true
+      localStorage.setItem("onboarded", "true")
+      document.getElementById("onboarding-screen").classList.remove("active")
+      switchView("dashboard")
+    }
+    function exportReport() {
+      showToast("Report exported to Downloads (demo)", "success")
+    }
+    function logout() {
+      if (confirm("Log out of BillSplit?")) {
+        localStorage.clear()
+        location.reload()
+      }
+    }
+    function init() {
+      loadState()
+      lucide.createIcons()
+      updateNotificationBadge()
+      updateBalances()
+      if (!state.onboarded) {
+        document.getElementById("onboarding-screen").classList.add("active")
+      } else {
+        switchView("dashboard")
+      }
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'))
+          btn.classList.add('active')
+        })
+      })
+      // Keyboard shortcut for new expense
+      document.addEventListener('keydown', e => {
+        if (e.key === "/" && document.activeElement.tagName !== "INPUT" && document.activeElement.tagName !== "TEXTAREA") {
+          e.preventDefault()
+          showAddModal()
+        }
+      })
+    }
+    window.onload = init
+  </script>
 </body>
 </html>
